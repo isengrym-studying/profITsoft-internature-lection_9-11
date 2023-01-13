@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import ua.klieshchunov.lection911.service.exception.BookAlreadyExistsException;
 import ua.klieshchunov.lection911.service.exception.BookNotFoundException;
+import ua.klieshchunov.lection911.service.exception.BookValidationException;
 
 @Slf4j
 @RestControllerAdvice
@@ -24,6 +25,12 @@ public class GlobalExceptionHandler {
     protected ResponseEntity<Object> handleBookNotFoundException(BookNotFoundException e) {
         log.warn("BookNotFoundException thrown: {}", e.getMessage());
         return buildErrorResponse(HttpStatus.NOT_FOUND, e.getMessage());
+    }
+
+    @ExceptionHandler(BookValidationException.class)
+    protected ResponseEntity<Object> handleBookValidationException(BookValidationException e) {
+        log.warn("BookValidationException thrown: {}", e.getMessage());
+        return buildErrorResponse(HttpStatus.BAD_REQUEST, e.getMessage());
     }
 
     private static ResponseEntity<Object> buildErrorResponse(HttpStatus httpStatus, String message) {

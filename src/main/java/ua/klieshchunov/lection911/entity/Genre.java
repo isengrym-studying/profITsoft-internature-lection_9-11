@@ -1,6 +1,7 @@
 package ua.klieshchunov.lection911.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 import java.util.Objects;
@@ -15,6 +16,7 @@ public class Genre {
     private int id;
 
     @Column(name="name")
+    @Size(max = 45, message = "Genre name too long")
     private String name;
 
     @Override

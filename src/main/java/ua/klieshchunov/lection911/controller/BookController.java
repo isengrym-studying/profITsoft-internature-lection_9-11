@@ -1,11 +1,13 @@
 package ua.klieshchunov.lection911.controller;
 
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import ua.klieshchunov.lection911.entity.Book;
 import ua.klieshchunov.lection911.entity.Genre;
@@ -13,6 +15,7 @@ import ua.klieshchunov.lection911.service.BookService;
 import ua.klieshchunov.lection911.service.GenreService;
 import ua.klieshchunov.lection911.service.exception.BookAlreadyExistsException;
 import ua.klieshchunov.lection911.service.exception.BookNotFoundException;
+import ua.klieshchunov.lection911.service.exception.BookValidationException;
 
 import java.util.List;
 import java.util.Optional;
@@ -50,12 +53,16 @@ public class BookController {
     }
 
     @PostMapping("/add")
-    public ResponseEntity<Book> addNewBook(@RequestBody Book book) throws BookAlreadyExistsException {
+    public ResponseEntity<Book> addNewBook(@RequestBody @Valid Book book,
+                                           BindingResult bindingResult) throws BookAlreadyExistsException, BookValidationException {
+        throwExceptionIfHasErrors(bindingResult);
         return new ResponseEntity<>(bookService.save(book), HttpStatus.CREATED);
     }
 
     @PatchMapping("/update")
-    public ResponseEntity<Book> updateBook(@RequestBody Book book) throws BookNotFoundException {
+    public ResponseEntity<Book> updateBook(@RequestBody @Valid Book book,
+                                           BindingResult bindingResult) throws BookNotFoundException, BookValidationException {
+        throwExceptionIfHasErrors(bindingResult);
         return new ResponseEntity<>(bookService.update(book), HttpStatus.OK);
     }
 
@@ -64,5 +71,18 @@ public class BookController {
         Optional<Book> bookOpt = bookService.findById(id);
         bookOpt.ifPresent(bookService::delete);
         return HttpStatus.OK;
+    }
+
+    private void throwExceptionIfHasErrors(BindingResult bindingResult) throws BookValidationException {
+        if (bindingResult.hasErrors()) {
+            StringBuilder message = new StringBuilder();
+
+            bindingResult.getFieldErrors()
+                    .forEach(fieldError -> message
+                            .append(fieldError.getDefaultMessage())
+                            .append("; "));
+
+            throw new BookValidationException(message.toString());
+        }
     }
 }
