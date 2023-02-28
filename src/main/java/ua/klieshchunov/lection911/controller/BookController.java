@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
+@CrossOrigin(origins = "http://localhost:3000")
 @RequestMapping("/books")
 public class BookController {
     private final BookService bookService;
@@ -33,7 +34,7 @@ public class BookController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Book>> getAllBooks(@RequestParam(value = "pageSize", defaultValue = "5") int pageSize,
+    public ResponseEntity<List<Book>> getAllBooks(@RequestParam(value = "pageSize", defaultValue = "100") int pageSize,
                                                   @RequestParam(value = "pageNum", defaultValue = "0") int pageNum,
                                                   @RequestParam(value = "genreId", required=false) Integer genreId,
                                                   @RequestParam(value = "author", required=false) String author) {
@@ -53,8 +54,9 @@ public class BookController {
     }
 
     @PostMapping("/add")
-    public ResponseEntity<Book> addNewBook(@RequestBody @Valid Book book,
+    public ResponseEntity<Book> addNewBook(@RequestBody Book book,
                                            BindingResult bindingResult) throws BookAlreadyExistsException, BookValidationException {
+        System.out.println(book);
         throwExceptionIfHasErrors(bindingResult);
         return new ResponseEntity<>(bookService.save(book), HttpStatus.CREATED);
     }
